@@ -49,9 +49,9 @@ var q = require("q");
 	// );
 
 
-	function GetRandomTag(){
+	function GetRandomTag(skipcount){
 		var d = q.defer();
-		var ts = db.tags.find({}).limit(-1).skip(faker.random.number(3)).limit(4,
+		var ts = db.tags.find({}).limit(-1).skip(faker.random.number(40)).limit(3,
 			function(err, doc){
 				d.resolve(doc);
 				
@@ -62,7 +62,7 @@ var q = require("q");
 
 	function GetRandomFilter(){
 		var d = q.defer();
-		var ts = db.filters.find({}).limit(-1).skip(faker.random.number(3)).limit(4,
+		var ts = db.filters.find({}).limit(-1).skip(faker.random.number(20)).limit(4,
 					function(err, doc){
 						d.resolve(doc);
 					}
@@ -113,7 +113,12 @@ var q = require("q");
 	//     });
 	// };
 
-	GetRandomTag()
+
+
+function start(count) {
+
+
+	 return GetRandomTag(count)
 		.then(function(tags){
 
 			console.log(tags);
@@ -127,7 +132,17 @@ var q = require("q");
 
 		})
 		.fail(function(err){console.log(err);});
-		
+
+}
+
+var ps= [];
+	for (i=0; i<20;i++){
+		ps.push(start(i));
+
+
+	}
+
+	q.all(ps);
 
 	//db.tags.find({}).toArray(), function(err, doc){});
 
