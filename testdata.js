@@ -63,8 +63,19 @@ var q = require("q");
 	function GetRandomFilter(){
 		var d = q.defer();
 		var ts = db.filters.find({}).limit(-1).skip(faker.random.number(20)).limit(4,
-					function(err, doc){
-						d.resolve(doc);
+					function(err, docs){
+						//add this to filter lookup master
+						var types = ["VendorCode","ProductCode", "SupplierCode"];
+						var filterList = [];
+						for (var i = 0; i < 3; i++) {
+							filterList.push({"type": types[i],
+							items:docs});
+
+						}
+
+
+
+						d.resolve(filterList);
 					}
 				);
 		return d.promise;
