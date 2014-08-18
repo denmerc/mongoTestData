@@ -52,8 +52,9 @@ var q = require("q");
 	function GetRandomTag(skipcount){
 		var d = q.defer();
 		var ts = db.tags.find({}).limit(-1).skip(faker.random.number(40)).limit(3,
-			function(err, doc){
-				d.resolve(doc);
+			function(err, docs){
+				// console.log(docs);
+				d.resolve(docs);
 				
 			}
 		);
@@ -64,7 +65,7 @@ var q = require("q");
 		var d = q.defer();
 		var ts = db.filters.find({}).limit(-1).skip(faker.random.number(20)).limit(4,
 					function(err, docs){
-						//add this to filter lookup master
+						//add this to filter lookup master then project IsSelected
 						var types = ["VendorCode","ProductCode", "SupplierCode"];
 						var filterList = [];
 						for (var i = 0; i < 3; i++) {
@@ -83,16 +84,42 @@ var q = require("q");
 
 	function SaveAnalytic(tags, filters){
 
-		return db.analytics.save(
+		db.analytics.save(
 			{
 				name: "analytic-" + faker.random.number(100).toString(),
 				description: faker.Lorem.sentence(1),
 				status: faker.Helpers.randomize(["Completed","Pending", "Active"]),
-				tags: tags,
+				tags: [],
 				filters: filters,
 				lastUpdated: faker.Date.recent(5),
 				lastUserUpdated: faker.Name.findName()
+			}, function(err, saved){
+
+					// console.log(err);
+					 db.analytics.update({},
+	                    { $addToSet: { tags: { $each: [ 
+	                    	"tag-" + faker.Lorem.words(1)
+	                    	] 
+	                    } } },{"multi":true, "upsert":true} ,
+
+	                  function(err, updated){console.log(err);});
+
+				
 			});
+
+
+	}
+
+	function UpdateTags(){
+		// for (var i = 0; i < faker.random.number(20); i++) {
+					 db.analytics.update({},
+	                    { $addToSet: { tags: { $each: [ 
+	                    	"tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1)
+	                    	] 
+	                    } } }, {"multi":true, "upsert":true} ,
+
+	                  function(err, updated){console.log(err);});
+		// }
 	}
 
 	// return getUsername()
@@ -132,7 +159,7 @@ function start(count) {
 	 return GetRandomTag(count)
 		.then(function(tags){
 
-			console.log(tags);
+			// console.log(tags);
 			return GetRandomFilter()
 			.then(function(filters){
 				console.log(filters);
@@ -142,7 +169,9 @@ function start(count) {
 
 
 		})
-		.fail(function(err){console.log(err);});
+		.fail(function(err){console.log(err);})
+		// .fin(UpdateTags())
+		;
 
 }
 
@@ -153,7 +182,7 @@ var ps= [];
 
 	}
 
-	q.all(ps);
+	q.allSettled(ps); 
 
 	//db.tags.find({}).toArray(), function(err, doc){});
 
