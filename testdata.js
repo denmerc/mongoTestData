@@ -10,8 +10,10 @@ db.tags.find(function(err, doc){
 //db.coll.find({}, function(err, docs){});
 
 
-var databaseUrl = "promo"; // "username:password@example.com/mydb"
-var collections = ["tags", "analytics", "filters"];
+//var databaseUrl = "promo"; // "username:password@example.com/mydb"
+var databaseUrl = "mongodb://promoUser:aplpromoter@ds027829.mongolab.com:27829/promo";
+
+var collections = ["analytics", "filters"];
 var db = require("mongojs").connect(databaseUrl, collections);
 var faker = require("faker");
 var q = require("q");
@@ -25,6 +27,8 @@ var q = require("q");
 
 //create filters
 // for (i=0; i<20;i++){db.filters.save({code: "fcode-" + faker.random.number(100).toString(), description:"filter-" + faker.Lorem.words(1)})};
+
+
 
 // create analytics
 
@@ -82,7 +86,7 @@ var q = require("q");
 		return d.promise;
 	}
 
-	function SaveAnalytic(tags, filters){
+	function SaveAnalytic(filters){
 
 		db.analytics.save(
 			{
@@ -102,7 +106,11 @@ var q = require("q");
 	                    	] 
 	                    } } },{"multi":true, "upsert":true} ,
 
-	                  function(err, updated){console.log(err);});
+	                  function(err, updated){
+	                  	if (err) console.log(err);
+
+
+	                  });
 
 				
 			});
@@ -156,19 +164,19 @@ var q = require("q");
 function start(count) {
 
 
-	 return GetRandomTag(count)
-		.then(function(tags){
+	 // return GetRandomTag(count)
+		// .then(function(tags){
 
 			// console.log(tags);
 			return GetRandomFilter()
 			.then(function(filters){
 				console.log(filters);
-				return SaveAnalytic(tags,filters);
-			});
+				return SaveAnalytic(filters);//return SaveAnalytic(tags,filters);
+			})
 
 
 
-		})
+		// })
 		.fail(function(err){console.log(err);})
 		// .fin(UpdateTags())
 		;
@@ -176,7 +184,7 @@ function start(count) {
 }
 
 var ps= [];
-	for (i=0; i<20;i++){
+	for (i=0; i<250;i++){
 		ps.push(start(i));
 
 
