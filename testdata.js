@@ -17,6 +17,8 @@ var collections = ["analytics", "filters"];
 var db = require("mongojs").connect(databaseUrl, collections);
 var faker = require("faker");
 var q = require("q");
+var driverTypes = ["Movement", "Markup", "DaysOnHand", "DaysLeadTime", "InStockRatio", "SalesTrendRatio"];
+var mode = ["Auto", "Manual"];
 
 //db.tags.find(function(error, docs){
 
@@ -86,7 +88,52 @@ var q = require("q");
 		return d.promise;
 	}
 
-	function SaveAnalytic(filters){
+	function FakeGroupsItems(numberOfGroups) {
+		var d = q.defer();
+
+		var groupLineItems = [];
+		for (var i = 0; i < numberOfGroups; i++) {
+			groupLineItems.push(
+				{
+					LineItemId : i,
+					Group : "Group" + i,
+					SkuCount : faker.random.number(1000),
+					Min : 1,
+					Max : faker.random.number(100),
+					SalesValue : faker.random.number(100000)
+				}
+
+			);
+		}
+
+		console.log(groupLineItems);
+		d.resolve(groupLineItems);
+		return d.promise;
+
+	}
+
+	function CreateDriverSet(lines){
+		var d = q.defer();
+		var drivers = [];
+
+		for (var i = 0; i < 6; i++) {
+
+			for (var j = 0; j < 2; j++) {
+				drivers.push(
+				{
+					type: driverTypes[i],
+					mode: mode[j],
+					groups: lines
+				});
+			}
+		}
+		console.log(drivers);
+		d.resolve(drivers);
+		return d.promise;
+	}
+
+
+	function SaveAnalytic(filters, drivers){
 
 		db.analytics.save(
 			{
@@ -94,6 +141,7 @@ var q = require("q");
 				description: faker.Lorem.sentence(1),
 				status: faker.Helpers.randomize(["Completed","Pending", "Active"]),
 				tags: [],
+				drivers: drivers,
 				filters: filters,
 				lastUpdated: faker.Date.recent(5),
 				lastUserUpdated: faker.Name.findName()
@@ -169,9 +217,15 @@ function start(count) {
 
 			// console.log(tags);
 			return GetRandomFilter()
-			.then(function(filters){
-				console.log(filters);
-				return SaveAnalytic(filters);//return SaveAnalytic(tags,filters);
+				.then (function(filters){
+					return FakeGroupsItems(faker.random.number(5))
+						.then (function(lines){
+							return CreateDriverSet(lines)
+							.then(function(drivers){
+								return SaveAnalytic(filters, drivers);
+							
+						});
+				});
 			})
 
 
@@ -184,7 +238,7 @@ function start(count) {
 }
 
 var ps= [];
-	for (i=0; i<250;i++){
+	for (i=0; i<10;i++){
 		ps.push(start(i));
 
 
