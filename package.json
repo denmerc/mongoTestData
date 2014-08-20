@@ -1,0 +1,18 @@
+{
+  "name": "mongoTestData",
+  "version": "0.0.0",
+  "description": "",
+  "main": "testData.js",
+  "dependencies": {
+    "faker": "^1.1.0",
+    "mongojs": "^0.13.1",
+    "q": "^1.0.1",
+    "jshint": "^2.5.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
