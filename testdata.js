@@ -20,6 +20,9 @@ var q = require("q");
 var driverTypes = ["Movement", "Markup", "DaysOnHand", "DaysLeadTime", "InStockRatio", "SalesTrendRatio"];
 var mode = ["Auto", "Manual"];
 
+var priceListTypes = ["Cost", "Retail", "Distributor 1", "Distributor 2"];
+var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
+
 //db.tags.find(function(error, docs){
 
 //});
@@ -132,8 +135,48 @@ var mode = ["Auto", "Manual"];
 		return d.promise;
 	}
 
+	function FakePriceListsForAnalytic(){
+		var d = q.defer();
+		var pricelists = [];  
+		for (var i = 0; faker.random.number(4); i++) {
+			pricelists.push(
+					{
+						SortId : i,
+						Type: faker.Helpers.randomize(priceListTypes),
+						Code: "pricelist-" + faker.random.number(100),
+						Description: faker.Lorem.sentence(1),
+						IsKey : false
+					}
+			);
 
-	function SaveAnalytic(filters, drivers){
+		}
+
+		console.log(pricelists);
+		d.resolve(pricelists);
+		return d.promise;	
+		
+	}
+
+	function FakeSchemesWithPriceLists(lists){
+
+		var d = q.defer();
+		var schemes = [];
+
+		for (var j = 0; j < getRandomInt(1,4); j++) {
+			schemes.push(
+					{ 
+						PricingMode : priceListMode[j],
+						PriceLists : lists
+					}
+
+			);
+		}
+		console.log(schemes);
+		d.resolve(schemes);
+		return d.promise;
+	}
+
+	function SaveAnalytic(filters, drivers, schemes){
 
 		db.analytics.save(
 			{
@@ -143,6 +186,7 @@ var mode = ["Auto", "Manual"];
 				tags: [],
 				drivers: drivers,
 				filters: filters,
+				pricelists : schemes,
 				lastUpdated: faker.Date.recent(5),
 				lastUserUpdated: faker.Name.findName()
 			}, function(err, saved){
@@ -207,7 +251,9 @@ var mode = ["Auto", "Manual"];
 	//     });
 	// };
 
-
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 function start(count) {
 
@@ -216,19 +262,24 @@ function start(count) {
 		// .then(function(tags){
 
 			// console.log(tags);
-			return GetRandomFilter()
-				.then (function(filters){
-					return FakeGroupsItems(faker.random.number(5))
-						.then (function(lines){
-							return CreateDriverSet(lines)
-							.then(function(drivers){
-								return SaveAnalytic(filters, drivers);
-							
+		return FakePriceListsForAnalytic()
+			.then (function(lists){
+				return FakeSchemesWithPriceLists(lists)			
+					.then (function(schemes){
+						return GetRandomFilter()
+							.then (function(filters){
+								return FakeGroupsItems(faker.random.number(5))
+									.then (function(lines){
+										return CreateDriverSet(lines)
+										.then(function(drivers){
+											return SaveAnalytic(filters, drivers, schemes);
+										
+									});
+							});
 						});
-				});
+					});
+
 			})
-
-
 
 		// })
 		.fail(function(err){console.log(err);})

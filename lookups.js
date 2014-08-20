@@ -5,20 +5,58 @@ var db = require("mongojs").connect(databaseUrl, collections);
 var faker = require("faker");
 var q = require("q");
 
+//lookup for value driver type
+var drivers = ["Movement", "Markup", "DaysOnHand", "DaysLeadTime", "InStockRatio", "SalesTrendRatio"];
+var mode = ["Auto", "Manual"];
 
+var priceListTypes = ["Cost", "Retail", "Distributor 1", "Distributor 2"];
+var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
 //create tags
 // for (i=0; i<20;i++){db.tags.save({code: "tcode-" + faker.random.number(100).toString(), description:"tag-" + faker.Lorem.words(1)})};
 
 //create filters
 // for (i=0; i<20;i++){db.filters.save({code: "fcode-" + faker.random.number(100).toString(), description:"filter-" + faker.Lorem.words(1)});}
 
-
-//lookup for value driver type
-var drivers = ["Movement", "Markup", "DaysOnHand", "DaysLeadTime", "InStockRatio", "SalesTrendRatio"];
-var mode = ["Auto", "Manual"];
+//option - master price list
 
 
+function FakePriceListsForAnalytic(){
+	var d = q.defer();
+	var pricelists = [];  var schemes = [];
+	for (var i = 0; faker.random.number(); i++) {
+		pricelists.push(
+				{
+					SortId : i,
+					Type: faker.Helpers.randomize(priceListTypes),
+					Code: "pricelist-" + faker.random.number(100),
+					Description: faker.Lorem.words(5),
+					IsKey : false
+				}
+		);
 
+	}
+
+	for (var j = 0; j < getRandomInt(1,4); j++) {
+		schemes.push(
+				{ 
+					PricingMode : priceListMode[j],
+					PriceLists : pricelists
+				}
+
+		);
+	}
+	console.log(schemes);
+	d.resolve(schemes);
+	return d.promise;	
+	
+}
+
+
+FakePriceListsForAnalytic();
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 function FakeGroupsItems(numberOfGroups) {
 	var d = q.defer();
@@ -62,38 +100,22 @@ function SaveDriver (lines) {
 	);
 }
 
-function start(count) {
 
-		return FakeGroupsItems(count)
-		.then(function(lines){return SaveDriver(lines);})
-		.fail(function(err){console.log(err);})
-		;
 
-}
+// function start(count) {
 
-var ps= [];
-	for (i=0; i<11;i++){
-		ps.push(start(faker.random.number(10)));
-	}
+// 		return FakeGroupsItems(count)
+// 		.then(function(lines){return SaveDriver(lines);})
+// 		.fail(function(err){console.log(err);})
+// 		;
 
-	q.allSettled(ps); 
+// }
 
-//create value drivers for UpdateValueDrivers in test.data.js
-// for (i=0; i<6;i++){
-
-// 	db.valuedrivers.save(
-// 	{
-// 		type: drivers[i],
-// 		mode: mode[i],
-// 		groups: group
+// var ps= [];
+// 	for (i=0; i<11;i++){
+// 		ps.push(start(faker.random.number(10)));
 // 	}
 
-// 	);
+// 	q.allSettled(ps); 
 
-// 	db.valuedrivers.save(
-// 	{
-// 		type: drivers[i],
-// 		mode: mode[i+1],
-// 		groups:[]
-// 	});
-// }
+
