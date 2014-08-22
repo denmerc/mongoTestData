@@ -60,7 +60,7 @@ var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
 
 	function GetRandomTag(skipcount){
 		var d = q.defer();
-		var ts = db.tags.find({}).limit(-1).skip(faker.random.number(40)).limit(3,
+		var ts = db.tags.find({}).skip(faker.random.number(10)).limit(3,
 			function(err, docs){
 				// console.log(docs);
 				d.resolve(docs);
@@ -78,8 +78,11 @@ var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
 						var types = ["VendorCode","ProductCode", "SupplierCode"];
 						var filterList = [];
 						for (var i = 0; i < 3; i++) {
-							filterList.push({"type": types[i],
-							items:docs});
+							filterList.push(
+								{
+									"Type" : types[i],
+									"Items" : docs
+								});
 
 						}
 
@@ -99,7 +102,7 @@ var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
 			groupLineItems.push(
 				{
 					LineItemId : i,
-					Group : "Group" + i,
+					GroupName : "Group" + i,
 					SkuCount : faker.random.number(1000),
 					Min : 1,
 					Max : faker.random.number(100),
@@ -124,9 +127,9 @@ var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
 			for (var j = 0; j < 2; j++) {
 				drivers.push(
 				{
-					type: driverTypes[i],
-					mode: mode[j],
-					groups: lines
+					Type: driverTypes[i],
+					Mode: mode[j],
+					Groups: lines
 				});
 			}
 		}
@@ -180,29 +183,31 @@ var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
 
 		db.analytics.save(
 			{
-				name: "analytic-" + faker.random.number(100).toString(),
-				description: faker.Lorem.sentence(1),
-				status: faker.Helpers.randomize(["Completed","Pending", "Active"]),
-				tags: [],
-				drivers: drivers,
-				filters: filters,
-				pricelists : schemes,
-				lastUpdated: faker.Date.recent(5),
-				lastUserUpdated: faker.Name.findName()
+				Name: "analytic-" + faker.random.number(100).toString(),
+				Description: faker.Lorem.sentence(1),
+				Status: faker.Helpers.randomize(["Completed","Pending", "Active"]),
+				Tags: [],
+				Drivers: drivers,
+				Filters: filters,
+				PriceSchemes : schemes,
+				LastUpdated: faker.Date.recent(5),
+				LastUserUpdated: faker.Name.findName()
 			}, function(err, saved){
 
-					// console.log(err);
-					 db.analytics.update({},
-	                    { $addToSet: { tags: { $each: [ 
-	                    	"tag-" + faker.Lorem.words(1)
-	                    	] 
-	                    } } },{"multi":true, "upsert":true} ,
+					if(err){console.log(err);}
+					 // db.analytics.update({},
+	     //                { $addToSet: { Tags: { $each: [ 
+	     //                	"tag-" + faker.Lorem.words(1)
+	     //                	] 
+	     //                } } },{"multi":true, "upsert":true} ,
 
-	                  function(err, updated){
-	                  	if (err) console.log(err);
+	     //              function(err, updated){
+	     //              	if (err) console.log(err);
 
 
-	                  });
+	     //              });
+
+
 
 				
 			});
@@ -210,17 +215,103 @@ var priceListMode = ["Global", "GlobalPlus", "Cascade", "Single" ];
 
 	}
 
+	function UpdateTag(tagString){
+		db.analytics.find(function(err, docs) {
+
+					 db.analytics.update({},
+	                    { $addToSet: { Tags: { $each: [ 
+	                    	"tag-" + tagString
+	                    	] 
+	                    } } }, {"multi":true, "upsert":true} ,
+
+	                  function(err, updated){
+
+	                  	if(err){console.log(err);}
+	                  	else console.log("done! with" + tagString);
+	                  });	    		
+
+
+		    
+
+
+		});
+
+	}
+
 	function UpdateTags(){
 		// for (var i = 0; i < faker.random.number(20); i++) {
-					 db.analytics.update({},
-	                    { $addToSet: { tags: { $each: [ 
+
+					 // db.analytics.update({},
+	     //                { $addToSet: { Tags: { $each: [ 
+	     //                	"tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1)
+	     //                	] 
+	     //                } } }, {"multi":true, "upsert":true} ,
+
+	     //              function(err, updated){console.log(err);});
+
+		// }
+
+		db.analytics.find(function(err, docs) {
+		    // console.log(doc);
+		    // if (!doc) {
+		    //     // we visited all docs in the collection
+		    //     return;
+		    // }	
+
+		    docs.forEach(function(doc){
+
+					 db.analytics.update({ Name: doc.Name},
+	                    { $addToSet: { Tags: { $each: [ 
 	                    	"tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1)
 	                    	] 
 	                    } } }, {"multi":true, "upsert":true} ,
 
-	                  function(err, updated){console.log(err);});
-		// }
+	                  function(err, updated){
+
+	                  	if(err){console.log(err);}
+	                  	else console.log("done!");
+	                  });	    		
+
+
+		    });
+			// db.analytics.findAndModify({
+			//     query: {Name: doc.Name},
+			//     update: { 
+	  //                $addToSet: { Tags: { $each: [ 
+	  //               	"tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1)
+	  //               	] 
+	  //               } } 
+
+			//     },
+			//     new: false
+			// }, function(err, doc, lastErrorObject) {
+			// 	if(err){console.log(lastErrorObject);}
+			//     console.log(doc.Tags);
+			// });
+
+		});
+		// db.analytics.find({}).forEach(function(err, doc) {
+		//     if (!doc) {
+		//         // we visited all docs in the collection
+		//         return;
+		//     }
+		//     console.log(doc);
+
+		// 	 db.analytics.save(doc,
+  //               { $addToSet: { Tags: { $each: [ 
+  //               	"tag-" + faker.Lorem.words(1), "tag-" + faker.Lorem.words(1)
+  //               	] 
+  //               } } },
+
+  //             function(err, updated){
+  //             	if (err) console.log(err);
+
+
+  //             });
+		// });
 	}
+
+
 
 	// return getUsername()
 	 //    .then(function (username) {
@@ -288,14 +379,21 @@ function start(count) {
 
 }
 
+
 var ps= [];
 	for (i=0; i<10;i++){
 		ps.push(start(i));
 
 
 	}
+	
+	q.allSettled(ps)
+		// .then(UpdateTags())
+	; 
 
-	q.allSettled(ps); 
+
+//post updates
+// UpdateTag("analytic");
 
 	//db.tags.find({}).toArray(), function(err, doc){});
 
