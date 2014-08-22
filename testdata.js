@@ -11,7 +11,7 @@ db.tags.find(function(err, doc){
 
 
 //var databaseUrl = "promo"; // "username:password@example.com/mydb"
-var databaseUrl = "mongodb://promoUser:aplpromoter@ds027829.mongolab.com:27829/promo";
+var databaseUrl = "";
 
 var collections = ["analytics", "filters"];
 var db = require("mongojs").connect(databaseUrl, collections);

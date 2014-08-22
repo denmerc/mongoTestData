@@ -1,5 +1,5 @@
 var databaseUrl = "promo"; // "username:password@example.com/mydb"
-// var databaseUrl = "mongodb://promoUser:aplpromoter@ds027829.mongolab.com:27829/promo";
+// var databaseUrl = "";
 var collections = ["tags", "analytics", "filters", "drivers"];
 var db = require("mongojs").connect(databaseUrl, collections);
 var faker = require("faker");
